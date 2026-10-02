@@ -21,12 +21,12 @@ import java.util.Map;
 
 import org.apache.axis2.context.MessageContext;
 import org.holodeckb2b.interfaces.messagemodel.IEbmsError;
-import org.holodeckb2b.interfaces.persistency.entities.IErrorMessageEntity;
-import org.holodeckb2b.interfaces.persistency.entities.IMessageUnitEntity;
-import org.holodeckb2b.interfaces.persistency.entities.IPullRequestEntity;
-import org.holodeckb2b.interfaces.persistency.entities.IReceiptEntity;
-import org.holodeckb2b.interfaces.persistency.entities.IUserMessageEntity;
 import org.holodeckb2b.interfaces.security.ISecurityProcessingResult;
+import org.holodeckb2b.interfaces.storage.IErrorMessageEntity;
+import org.holodeckb2b.interfaces.storage.IMessageUnitEntity;
+import org.holodeckb2b.interfaces.storage.IPullRequestEntity;
+import org.holodeckb2b.interfaces.storage.IReceiptEntity;
+import org.holodeckb2b.interfaces.storage.IUserMessageEntity;
 
 /**
  * Is the interface that represents the Holodeck B2B <i>message processing context</i> during the execution of the
@@ -285,7 +285,8 @@ public interface IMessageProcessingContext {
 	 * Gets the processing results for a specific type of security tokens (identified by the results class).
 	 *
 	 * @param type	The class of processing results to retrieve, MUST NOT be <code>null</code>
-	 * @param <T>
+	 * @param <T>   Limits the classes that can be used for the <code>type</code> parameter to sub-classes
+	 * 		of {@link ISecurityProcessingResult}
 	 * @return	All results of processing of the given class
 	 */
 	<T extends ISecurityProcessingResult> Collection<T> getSecurityProcessingResults(Class<T> type);

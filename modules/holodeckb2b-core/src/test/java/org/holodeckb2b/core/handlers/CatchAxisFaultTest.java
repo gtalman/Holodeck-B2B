@@ -26,17 +26,16 @@ import org.apache.axis2.context.MessageContext;
 import org.holodeckb2b.common.messagemodel.Receipt;
 import org.holodeckb2b.common.messagemodel.UserMessage;
 import org.holodeckb2b.common.testhelpers.HolodeckB2BTestCore;
-import org.holodeckb2b.common.testhelpers.TestUtils;
+import org.holodeckb2b.commons.testing.TestUtils;
 import org.holodeckb2b.commons.util.MessageIdUtils;
 import org.holodeckb2b.commons.util.Utils;
 import org.holodeckb2b.core.HolodeckB2BCore;
 import org.holodeckb2b.core.MessageProcessingContext;
-import org.holodeckb2b.core.StorageManager;
+import org.holodeckb2b.core.storage.StorageManager;
 import org.holodeckb2b.interfaces.core.HolodeckB2BCoreInterface;
-import org.holodeckb2b.interfaces.persistency.entities.IReceiptEntity;
-import org.holodeckb2b.interfaces.persistency.entities.IUserMessageEntity;
 import org.holodeckb2b.interfaces.processingmodel.ProcessingState;
-import org.holodeckb2b.persistency.inmemory.InMemoryProvider;
+import org.holodeckb2b.interfaces.storage.IReceiptEntity;
+import org.holodeckb2b.interfaces.storage.IUserMessageEntity;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -49,8 +48,7 @@ public class CatchAxisFaultTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-    	HolodeckB2BTestCore core = new HolodeckB2BTestCore(TestUtils.getTestBasePath().toString());
-        core.setPersistencyProvider(new InMemoryProvider());
+    	HolodeckB2BTestCore core = new HolodeckB2BTestCore(TestUtils.getTestClassBasePath());
         HolodeckB2BCoreInterface.setImplementation(core);
     }
 
@@ -65,7 +63,7 @@ public class CatchAxisFaultTest {
         StorageManager updateManager = HolodeckB2BCore.getStorageManager();
         UserMessage userMessage = new UserMessage();
         userMessage.setMessageId(MessageIdUtils.createMessageId());
-        procCtx.setUserMessage(updateManager.storeIncomingMessageUnit(userMessage));
+        procCtx.setUserMessage(updateManager.storeReceivedMessageUnit(userMessage));
 
         Receipt receipt = new Receipt();
         receipt.setMessageId(MessageIdUtils.createMessageId());
@@ -80,7 +78,7 @@ public class CatchAxisFaultTest {
         assertFalse(Utils.isNullOrEmpty(procCtx.getReceivedMessageUnits()));
         assertFalse(Utils.isNullOrEmpty(procCtx.getSendingMessageUnits()));
         assertTrue(procCtx.getReceivedMessageUnits().stream()
-        					   .noneMatch(mu -> mu.getCurrentProcessingState().getState() == ProcessingState.FAILURE));
+        					   .noneMatch(mu -> mu.getCurrentProcessingState().getState() == ProcessingState.INTERRUPTED));
         assertTrue(procCtx.getSendingMessageUnits().stream()
         						.noneMatch(mu -> mu.getCurrentProcessingState().getState() == ProcessingState.FAILURE));
     }
@@ -96,7 +94,7 @@ public class CatchAxisFaultTest {
         StorageManager updateManager = HolodeckB2BCore.getStorageManager();
         UserMessage userMessage = new UserMessage();
         userMessage.setMessageId(MessageIdUtils.createMessageId());
-        IUserMessageEntity umEntity = updateManager.storeIncomingMessageUnit(userMessage);
+        IUserMessageEntity umEntity = updateManager.storeReceivedMessageUnit(userMessage);
         updateManager.setProcessingState(umEntity, ProcessingState.DELIVERED);
         procCtx.setUserMessage(umEntity);
 
@@ -121,7 +119,7 @@ public class CatchAxisFaultTest {
         assertNull(procCtx.getSendingPullRequest());
         assertNull(procCtx.getSendingUserMessage());
         assertEquals(ProcessingState.DELIVERED, umEntity.getCurrentProcessingState().getState());
-        assertEquals(ProcessingState.FAILURE, rcptEntity.getCurrentProcessingState().getState());
+        assertEquals(ProcessingState.INTERRUPTED, rcptEntity.getCurrentProcessingState().getState());
     }
 
     @Test
@@ -135,7 +133,7 @@ public class CatchAxisFaultTest {
     	StorageManager updateManager = HolodeckB2BCore.getStorageManager();
     	UserMessage userMessage = new UserMessage();
     	userMessage.setMessageId(MessageIdUtils.createMessageId());
-    	IUserMessageEntity umEntity = updateManager.storeIncomingMessageUnit(userMessage);
+    	IUserMessageEntity umEntity = updateManager.storeReceivedMessageUnit(userMessage);
     	updateManager.setProcessingState(umEntity, ProcessingState.OUT_FOR_DELIVERY);
     	procCtx.setUserMessage(umEntity);
 
@@ -153,7 +151,7 @@ public class CatchAxisFaultTest {
     	assertTrue(Utils.isNullOrEmpty(procCtx.getSendingReceipts()));
     	assertNull(procCtx.getSendingPullRequest());
     	assertNull(procCtx.getSendingUserMessage());
-    	assertEquals(ProcessingState.FAILURE, umEntity.getCurrentProcessingState().getState());
+    	assertEquals(ProcessingState.INTERRUPTED, umEntity.getCurrentProcessingState().getState());
     }
 
     @Test

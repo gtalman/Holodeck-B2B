@@ -23,7 +23,6 @@ import org.apache.axis2.description.Parameter;
 import org.apache.axis2.handlers.AbstractHandler;
 import org.apache.axis2.util.JavaUtils;
 import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.holodeckb2b.commons.util.Utils;
@@ -60,8 +59,7 @@ public abstract class AbstractBaseHandler extends AbstractHandler {
         try {
     		handledMsgProtocol = (String) handlerdesc.getParent().getParameter("HandledMessagingProtocol").getValue();
         } catch (Exception e) {
-    		LogFactory.getLog(this.getClass().getName())
-        				  					.warn("Not running inside a Holodeck B2B module for message processing");
+    		LogManager.getLogger().warn("Not running inside a Holodeck B2B module for message processing");
         }
         
         Parameter restricted = handlerdesc.getParameter("onlyAsResponder");
